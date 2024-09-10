@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
@@ -26,5 +27,12 @@ public class Controller {
         }).subscribe();
 
         sink.emitValue("", Sinks.EmitFailureHandler.FAIL_FAST);
+
+        WebClient.create().get()
+                .uri("http://google.com")
+                .retrieve()
+                .bodyToMono(String.class)
+                .doOnSuccess(s -> log.info("log 5 {}", MDC.getCopyOfContextMap().toString())) // Works only with enableAutomaticContextPropagation()
+                .block();
     }
 }
